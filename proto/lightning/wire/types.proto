@@ -24,4 +24,5 @@ message Signature {
 extend google.protobuf.FieldOptions {
   uint32 bits = 50001;
   uint32 length = 50002;
+  bool hex = 50003;
 }

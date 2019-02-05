@@ -26,8 +26,8 @@ module Lightning
     #
     class Init
       optional :uint32, :type, 1, :".lightning.wire.bits" => 16
-      optional ::Lightning::Wire::PascalString, :globalfeatures, 2
-      optional ::Lightning::Wire::PascalString, :localfeatures, 3
+      optional :string, :globalfeatures, 2, :".lightning.wire.hex" => true
+      optional :string, :localfeatures, 3, :".lightning.wire.hex" => true
     end
 
   end

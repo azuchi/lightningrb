@@ -52,6 +52,7 @@ module Lightning
     class ::Google::Protobuf::FieldOptions < ::Protobuf::Message
       optional :uint32, :".lightning.wire.bits", 50001, :extension => true
       optional :uint32, :".lightning.wire.length", 50002, :extension => true
+      optional :bool, :".lightning.wire.hex", 50003, :extension => true
     end
 
   end
