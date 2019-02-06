@@ -46,7 +46,7 @@ module Lightning
               )
             when 0x02
               ipv6_addr = stream.read(16).unpack("a16").first
-              ipv4_addr = IPAddr.ntop(ipv4_addr)
+              ipv6_addr = IPAddr.ntop(ipv6_addr)
               port = stream.read(2).unpack('n').first
               address = Lightning::Wire::LightningMessages::Generated::IP6.new(
                 ipv6_addr: ipv6_addr,
