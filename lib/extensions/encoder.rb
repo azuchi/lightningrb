@@ -9,6 +9,7 @@ module Protobuf
             packed_value = value.map { |val| field.encode(val) }.join
             stream << packed_value
           else
+            stream << [value.length].pack('n')
             value.each do |val|
               field.encode_to_stream(val, stream)
             end

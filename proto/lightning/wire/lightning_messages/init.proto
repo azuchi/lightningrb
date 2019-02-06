@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package lightning.wire;
+package lightning.wire.lightningMessages.generated;
 
 import "lightning/wire/types.proto";
 

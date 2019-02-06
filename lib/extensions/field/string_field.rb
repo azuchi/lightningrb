@@ -18,13 +18,20 @@ module Protobuf
         length = get_option('.lightning.wire.length')
         if length.to_i == 0
           length = stream.read(2).unpack('n').first
+          return unless length
         end
         hex = get_option('.lightning.wire.hex')
+        string = stream.read(length)
+        return unless string
+
         if hex
-          stream.read(length).unpack("H#{length * 2}").first
+          string = string.unpack("H#{length * 2}").first
+          return unless string.length == length * 2
         else
-          stream.read(length).unpack("a#{length}").first
+          string = string.unpack("a#{length}").first
+          return unless string.length == length
         end
+        string
       end
     end
   end

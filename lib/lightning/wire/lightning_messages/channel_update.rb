@@ -3,33 +3,13 @@
 module Lightning
   module Wire
     module LightningMessages
-      module ChannelUpdate
-        def self.load(payload)
-          _, signature, rest = payload.unpack('na64a*')
-          signature = LightningMessages.wire2der(signature)
-          new(signature, *rest.unpack('H64q>NCCnq>N2'))
-        end
+      class ChannelUpdate < Lightning::Wire::LightningMessages::Generated::ChannelUpdate
+        include Lightning::Wire::Serialization
+        extend Lightning::Wire::Serialization
+        TYPE = 258
 
-        def self.to_type
-          Lightning::Wire::LightningMessageTypes::CHANNEL_UPDATE
-        end
-
-        def to_payload
-          payload = +''
-          payload << [ChannelUpdate.to_type].pack('n')
-          payload << LightningMessages.der2wire(self[:signature].htb)
-          payload << self[:chain_hash].htb
-          payload << [
-            self[:short_channel_id],
-            self[:timestamp],
-            self[:message_flags],
-            self[:channel_flags],
-            self[:cltv_expiry_delta],
-            self[:htlc_minimum_msat],
-            self[:fee_base_msat],
-            self[:fee_proportional_millionths],
-          ].pack('q>NCCnq>N2')
-          payload
+        def initialize(fields = {})
+          super(fields.merge(type: TYPE))
         end
 
         def copy(attributes)
@@ -48,43 +28,34 @@ module Lightning
         end
 
         def valid_signature?(node_id)
-          Bitcoin::Key.new(pubkey: node_id).verify(self[:signature].htb, witness)
-        end
-
-        def witness_data
-          payload = +''
-          payload << self[:chain_hash].htb
-          payload << [
-            self[:short_channel_id],
-            self[:timestamp],
-            self[:message_flags],
-            self[:channel_flags],
-            self[:cltv_expiry_delta],
-            self[:htlc_minimum_msat],
-            self[:fee_base_msat],
-            self[:fee_proportional_millionths],
-          ].pack('q>NCCnq>N2')
-          payload
+          Bitcoin::Key.new(pubkey: node_id).verify(signature.value.htb, witness)
         end
 
         def witness
-          Bitcoin.double_sha256(witness_data)
+          self.class.witness(chain_hash, short_channel_id, timestamp, message_flags, channel_flags, cltv_expiry_delta, htlc_minimum_msat, fee_base_msat, fee_proportional_millionths)
         end
 
         def self.witness(chain_hash, short_channel_id, timestamp, message_flags, channel_flags, cltv_expiry_delta, htlc_minimum_msat, fee_base_msat, fee_proportional_millionths)
-          new(
-            '',
-            chain_hash,
-            short_channel_id,
-            timestamp,
-            message_flags,
-            channel_flags,
-            cltv_expiry_delta,
-            htlc_minimum_msat,
-            fee_base_msat,
-            fee_proportional_millionths
-          ).witness
+          witness = ChannelUpdateWitness.new(
+            chain_hash: chain_hash,
+            short_channel_id: short_channel_id,
+            timestamp: timestamp,
+            message_flags: message_flags,
+            channel_flags: channel_flags,
+            cltv_expiry_delta: cltv_expiry_delta,
+            htlc_minimum_msat: htlc_minimum_msat,
+            fee_base_msat: fee_base_msat,
+            fee_proportional_millionths: fee_proportional_millionths
+          )
+          stream = StringIO.new
+          Protobuf::Encoder.encode(witness, stream)
+          Bitcoin.double_sha256(stream.string)
         end
+      end
+
+      class ChannelUpdateWitness < Lightning::Wire::LightningMessages::Generated::ChannelUpdateWitness
+        include Lightning::Wire::Serialization
+        extend Lightning::Wire::Serialization
       end
     end
   end

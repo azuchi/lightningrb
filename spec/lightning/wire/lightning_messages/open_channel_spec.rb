@@ -39,93 +39,93 @@ describe Lightning::Wire::LightningMessages::OpenChannel do
   describe '#load' do
     subject { described_class.load(payload.htb) }
 
-    it { expect(subject[:chain_hash]).to eq chain_hash }
-    it { expect(subject[:temporary_channel_id]).to eq temporary_channel_id }
-    it { expect(subject[:funding_satoshis]).to eq funding_satoshis }
-    it { expect(subject[:push_msat]).to eq push_msat }
-    it { expect(subject[:dust_limit_satoshis]).to eq dust_limit_satoshis }
-    it { expect(subject[:max_htlc_value_in_flight_msat]).to eq max_htlc_value_in_flight_msat }
-    it { expect(subject[:channel_reserve_satoshis]).to eq channel_reserve_satoshis }
-    it { expect(subject[:htlc_minimum_msat]).to eq htlc_minimum_msat }
-    it { expect(subject[:feerate_per_kw]).to eq feerate_per_kw }
-    it { expect(subject[:to_self_delay]).to eq to_self_delay }
-    it { expect(subject[:max_accepted_htlcs]).to eq max_accepted_htlcs }
-    it { expect(subject[:funding_pubkey]).to eq funding_pubkey }
-    it { expect(subject[:revocation_basepoint]).to eq revocation_basepoint }
-    it { expect(subject[:payment_basepoint]).to eq payment_basepoint }
-    it { expect(subject[:delayed_payment_basepoint]).to eq delayed_payment_basepoint }
-    it { expect(subject[:htlc_basepoint]).to eq htlc_basepoint }
-    it { expect(subject[:first_per_commitment_point]).to eq first_per_commitment_point }
-    it { expect(subject[:channel_flags]).to eq channel_flags }
+    it { expect(subject.chain_hash).to eq chain_hash }
+    it { expect(subject.temporary_channel_id).to eq temporary_channel_id }
+    it { expect(subject.funding_satoshis).to eq funding_satoshis }
+    it { expect(subject.push_msat).to eq push_msat }
+    it { expect(subject.dust_limit_satoshis).to eq dust_limit_satoshis }
+    it { expect(subject.max_htlc_value_in_flight_msat).to eq max_htlc_value_in_flight_msat }
+    it { expect(subject.channel_reserve_satoshis).to eq channel_reserve_satoshis }
+    it { expect(subject.htlc_minimum_msat).to eq htlc_minimum_msat }
+    it { expect(subject.feerate_per_kw).to eq feerate_per_kw }
+    it { expect(subject.to_self_delay).to eq to_self_delay }
+    it { expect(subject.max_accepted_htlcs).to eq max_accepted_htlcs }
+    it { expect(subject.funding_pubkey).to eq funding_pubkey }
+    it { expect(subject.revocation_basepoint).to eq revocation_basepoint }
+    it { expect(subject.payment_basepoint).to eq payment_basepoint }
+    it { expect(subject.delayed_payment_basepoint).to eq delayed_payment_basepoint }
+    it { expect(subject.htlc_basepoint).to eq htlc_basepoint }
+    it { expect(subject.first_per_commitment_point).to eq first_per_commitment_point }
+    it { expect(subject.channel_flags).to eq channel_flags }
     # it { expect(subject[:shutdown_len]).to eq shutdown_len }
     # it { expect(subject[:shutdown_scriptpubkey]).to eq shutdown_scriptpubkey }
   end
 
   describe '#to_payload' do
     subject do
-      described_class[
-        chain_hash,
-        temporary_channel_id,
-        funding_satoshis,
-        push_msat,
-        dust_limit_satoshis,
-        max_htlc_value_in_flight_msat,
-        channel_reserve_satoshis,
-        htlc_minimum_msat,
-        feerate_per_kw,
-        to_self_delay,
-        max_accepted_htlcs,
-        funding_pubkey,
-        revocation_basepoint,
-        payment_basepoint,
-        delayed_payment_basepoint,
-        htlc_basepoint,
-        first_per_commitment_point,
-        channel_flags,
+      described_class.new(
+        chain_hash: chain_hash,
+        temporary_channel_id: temporary_channel_id,
+        funding_satoshis: funding_satoshis,
+        push_msat: push_msat,
+        dust_limit_satoshis: dust_limit_satoshis,
+        max_htlc_value_in_flight_msat: max_htlc_value_in_flight_msat,
+        channel_reserve_satoshis: channel_reserve_satoshis,
+        htlc_minimum_msat: htlc_minimum_msat,
+        feerate_per_kw: feerate_per_kw,
+        to_self_delay: to_self_delay,
+        max_accepted_htlcs: max_accepted_htlcs,
+        funding_pubkey: funding_pubkey,
+        revocation_basepoint: revocation_basepoint,
+        payment_basepoint: payment_basepoint,
+        delayed_payment_basepoint: delayed_payment_basepoint,
+        htlc_basepoint: htlc_basepoint,
+        first_per_commitment_point: first_per_commitment_point,
+        channel_flags: channel_flags,
         # shutdown_len,
         # shutdown_scriptpubkey
-      ].to_payload.bth
+      ).to_payload.bth
     end
 
     it { is_expected.to eq payload }
   end
 
   describe '#validate!' do
-    subject { build(:open_channel).get }
+    subject { build(:open_channel) }
     it { expect{ subject.validate! }.not_to raise_error }
 
     describe 'MUST set funding_satoshis to less than 2^24 satoshi.' do
-      subject { build(:open_channel, funding_satoshis: 2**24).get }
+      subject { build(:open_channel, funding_satoshis: 2**24) }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::AmountTooLarge) }
     end
 
     describe 'MUST set push_msat to equal or less than 1000 * funding_satoshis.' do
-      subject { build(:open_channel, push_msat: 1_000_000_001).get }
+      subject { build(:open_channel, push_msat: 1_000_000_001) }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::PushMsatTooLarge) }
     end
 
     describe 'MUST set funding_pubkey to valid DER-encoded, compressed, secp256k1 pubkeys.' do
-      subject { build(:open_channel, funding_pubkey: '0203040506070809000102030405060708090001020304050607080900010203').get }
+      subject { build(:open_channel, funding_pubkey: '0203040506070809000102030405060708090001020304050607080900010203') }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InvalidKeyFormat) }
     end
 
     describe 'MUST set revocation_basepoint to valid DER-encoded, compressed, secp256k1 pubkeys.' do
-      subject { build(:open_channel, revocation_basepoint: '0203040506070809000102030405060708090001020304050607080900010203').get }
+      subject { build(:open_channel, revocation_basepoint: '0203040506070809000102030405060708090001020304050607080900010203') }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InvalidKeyFormat) }
     end
 
     describe 'MUST set htlc_basepoint to valid DER-encoded, compressed, secp256k1 pubkeys.' do
-      subject { build(:open_channel, htlc_basepoint: '0203040506070809000102030405060708090001020304050607080900010203').get }
+      subject { build(:open_channel, htlc_basepoint: '0203040506070809000102030405060708090001020304050607080900010203') }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InvalidKeyFormat) }
     end
 
     describe 'MUST set payment_basepoint to valid DER-encoded, compressed, secp256k1 pubkeys.' do
-      subject { build(:open_channel, payment_basepoint: '0203040506070809000102030405060708090001020304050607080900010203').get }
+      subject { build(:open_channel, payment_basepoint: '0203040506070809000102030405060708090001020304050607080900010203') }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InvalidKeyFormat) }
     end
 
     describe 'MUST set delayed_payment_basepoint to valid DER-encoded, compressed, secp256k1 pubkeys.' do
-      subject { build(:open_channel, delayed_payment_basepoint: '0203040506070809000102030405060708090001020304050607080900010203').get }
+      subject { build(:open_channel, delayed_payment_basepoint: '0203040506070809000102030405060708090001020304050607080900010203') }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InvalidKeyFormat) }
     end
 
@@ -134,7 +134,7 @@ describe Lightning::Wire::LightningMessages::OpenChannel do
     end
 
     describe 'MUST set channel_reserve_satoshis greater than or equal to dust_limit_satoshis.' do
-      subject { build(:open_channel, channel_reserve_satoshis: 545).get }
+      subject { build(:open_channel, channel_reserve_satoshis: 545) }
       it { expect{ subject.validate! }.to raise_error(Lightning::Exceptions::InsufficientChannelReserve) }
     end
 
